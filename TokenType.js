@@ -1,0 +1,95 @@
+/**
+ * Token 的各种类型
+ */
+
+class TokenType {
+    static get ILLEGAL() {
+        return 'ILLEGAL'
+    }
+    static get EOF() {
+        return 'EOF'
+    }
+    // 标识符，字面量
+    static get IDENT() {
+        return 'IDENT'
+    }
+    static get INT() {
+        return 'INT'
+    }
+    // 操作符
+    static get ASSIGN() {
+        return 'ASSIGN'
+    }
+    static get EQ() {
+        return 'EQ'
+    }
+    static get NOT_EQ() {
+        return 'NOT_EQ'
+    }
+    static get PLUS() {
+        return 'PLUS'
+    }
+    static get MINUS() {
+        return 'MINUS'
+    }
+    static get BANG() {
+        return 'BANG'
+    }
+    static get ASTERISK() {
+        return 'ASTERISK'
+    }
+    static get SLASH() {
+        return 'SLASH'
+    }
+    static get LT() {
+        return 'LT'
+    }
+    static get GT() {
+        return 'GT'
+    }
+    // 分隔符
+    static get COMMA() {
+        return 'COMMA'
+    }
+    static get SEMICOLON() {
+        return 'SEMICOLON'
+    }
+    static get LPAREN() {
+        return 'LPAREN'
+    }
+    static get RPAREN() {
+        return 'RPAREN'
+    }
+    static get LBRACE() {
+        return 'LBRACE'
+    }
+    static get RBRACE() {
+        return 'RBRACE'
+    }
+    // 保留字
+    static get LET() {
+        return 'LET'
+    }
+    static get FUNCTION() {
+        return 'FUNCTION'
+    }
+    static get IF() {
+        return 'IF'
+    }
+    static get ELSE() {
+        return 'ELSE'
+    }
+    static get TRUE() {
+        return 'TRUE'
+    }
+    static get FALSE() {
+        return 'FALSE'
+    }
+    static get RETURN() {
+        return 'RETURN'
+    }
+}
+
+module.exports = {
+    TokenType
+}
