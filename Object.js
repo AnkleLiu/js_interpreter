@@ -44,4 +44,6 @@ class NullType extends ValueType {
 
 module.exports = {
     IntegerType,
+    BooleanType,
+    NullType,
 }
