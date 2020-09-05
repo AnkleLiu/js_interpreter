@@ -3,6 +3,14 @@
  */
 
 class TokenType {
+    // 特殊的，作为 ast 的根节点
+    static get PROGRAM() {
+        return 'PROGRAM'
+    }
+    // 特殊的，同上
+    static get EXPRESSION_STATEMENT() {
+        return 'EXPRESSION_STATEMENT'
+    }
     static get ILLEGAL() {
         return 'ILLEGAL'
     }
