@@ -18,36 +18,27 @@ class Interpreter {
         return new this(ast)
     }
 
-    monkeyEval(astNode) {
-        // TODO。这里还是要改成 constructor.name ，
-        console.log('monkeyEval', astNode.token.type);
-        const rootNodeType = astNode.token.type
+    monkeyEval(astNode) {        
+        console.log('astNode 类型', astNode.constructor.name);
+        const rootNodeType = astNode.constructor.name
         let tempVal
         switch(rootNodeType) {
-            case TokenType.PROGRAM:
-                log('eval program')
+            case 'ProgramNode':
+                log('ProgramNode 类型')
                 return this.evalStatements(astNode.statements)
-            case TokenType.EXPRESSION_STATEMENT:
-                log('eval EXPRESSION_STATEMENT')                
+            case 'ExpressionStatementNode':
+                log('ExpressionStatementNode 类型')
                 return this.monkeyEval(astNode.expression)
-            case TokenType.INT:
-                log('eval int', astNode)
+            case 'IntegerNode':
+                log('IntegerNode 类型')
                 return IntegerType.new(astNode.value)
-            case TokenType.TRUE:
-            case TokenType.FALSE:
-                // TODO。这里写的不好，应该有一个 boolean 类型
-                log('eval bool', astNode)
+            case 'BoolNode':
+                log('BoolNode 类型', astNode)
                 return BOOL_POOL[astNode.value]
-            case TokenType.BANG:
-                // TODO。这里能不能把 prefix 统一起来，又是 bang 又是 - 的
-                log('eval bang', astNode)
+            case 'PrefixNode':
+                log('PrefixNode 类型')
                 tempVal = this.monkeyEval(astNode.right)
-                log('取反值', tempVal)
-                return this.evalPrefixExpr(astNode.op, tempVal)
-            case TokenType.MINUS:                
-                log('eval minus', astNode)
-                tempVal = this.monkeyEval(astNode.right)
-                log('负数', tempVal)
+                log('tempVal', tempVal)
                 return this.evalPrefixExpr(astNode.op, tempVal)
             default:
                 log('没找到')
@@ -56,7 +47,7 @@ class Interpreter {
     }
 
     evalStatements(statements) {
-        log('evalStatements', statements[0].token.type === TokenType.EXPRESSION_STATEMENT)
+        log('evalStatements')
         for(const stmt of statements) {
             return this.monkeyEval(stmt)
         }
