@@ -2,6 +2,7 @@ const { TokenType } = require('./TokenType.js')
 const { Lexer } = require('./Lexer')
 const { Parser } = require('./Parser')
 const { log } = require('./Utils.js')
+const { IntegerType, NullType } = require('./Object.js')
 
 class Interpreter {
     constructor(ast) {
@@ -23,10 +24,11 @@ class Interpreter {
                 log('eval EXPRESSION_STATEMENT')                
                 return this.monkeyEval(astNode.expression)
             case TokenType.INT:
-                log('eval int')                
-                return 1
+                log('eval int', astNode)
+                return IntegerType.new(astNode.value)
             default:
                 log('没找到')
+                return NullType.new(astNode.value)
         }
     }
 
@@ -41,7 +43,7 @@ class Interpreter {
 
 function main() {
     log('main in interpreter')
-
+    // 整数求值测试：5, 10
     const code = `5`
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)
@@ -54,4 +56,9 @@ function main() {
 }
 
 
-main()
+// main()
+
+
+module.exports = {
+    Interpreter,
+}

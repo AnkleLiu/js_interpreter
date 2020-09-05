@@ -3,10 +3,10 @@ const { ObjectType } = require('./ObjectType')
 /**
  * 值类型
  */
-class ObjectType {}
+class ValueType {}
 
 
-class IntegerType {
+class IntegerType extends ValueType {
     constructor(value) {
         super()
         this.type = ObjectType.INTEGER_OBJ
@@ -18,7 +18,7 @@ class IntegerType {
     }
 }
 
-class BooleanType {
+class BooleanType extends ValueType {
     constructor(value) {
         super()
         this.type = ObjectType.BOOLEAN_OBJ
@@ -30,7 +30,7 @@ class BooleanType {
     }
 }
 
-class NullType {
+class NullType extends ValueType {
     constructor(value) {
         super()
         this.type = ObjectType.NULL_OBJ
