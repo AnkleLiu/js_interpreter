@@ -45,6 +45,12 @@ class Interpreter {
                 left = this.monkeyEval(astNode.left)
                 right = this.monkeyEval(astNode.right)
                 return this.evalInfixExpr(astNode.op, left, right)
+            case 'IfNode':
+                log('IfNode', astNode)
+                return this.evalIfExpression(astNode)
+            case 'BlockNode':
+                log('BlockNode')
+                return this.evalStatements(astNode.statements)
             default:
                 log('没找到')
                 return NullType.new(astNode.value)
@@ -135,13 +141,34 @@ class Interpreter {
                 return NullType.new(null)
         }
     }
+
+    evalIfExpression(astNode) {
+        log('evalIfExpr')
+        const condition = astNode.condition
+        const conditionValue = this.monkeyEval(condition)
+        log('conditionVal', conditionValue)
+        if(this.isTruthy(conditionValue)) {
+            return this.monkeyEval(astNode.consequence)
+        } else {
+            return this.monkeyEval(astNode.alternative)
+        }
+    }
+
+    isTruthy(expr) {
+        if(expr.value === 'TRUE') {
+            return true
+        }
+
+        return false
+    }
+
 }
 
 function main() {
     log('main in interpreter')
     // 整数求值测试：5, 10
     // 布尔值测试求值：true, false
-    const code = `true == false`
+    const code = `if(2 == 1){ 10 } else { 9 }`
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)
     const ast = parser.parseProgram()
