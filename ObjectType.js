@@ -5,6 +5,9 @@ class ObjectType {
     static get BOOLEAN_OBJ() {
         return 'BOOLEAN'
     }
+    static get RETURN_VALUE_OBJ() {
+        return 'RETURN_VALUE'
+    }
     static get NULL_OBJ() {
         return 'NULL'
     }

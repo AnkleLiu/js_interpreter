@@ -2,7 +2,8 @@ const { TokenType } = require('./TokenType.js')
 const { Lexer } = require('./Lexer')
 const { Parser } = require('./Parser')
 const { log } = require('./Utils.js')
-const { IntegerType, BooleanType, NullType } = require('./Object.js')
+const { ObjectType } = require('./ObjectType')
+const { IntegerType, BooleanType, ReturnValueType, NullType } = require('./Object.js')
 
 const BOOL_POOL = {
     'true': BooleanType.new(TokenType.TRUE),
@@ -24,37 +25,52 @@ class Interpreter {
         let tempVal, left, right
         switch(rootNodeType) {
             case 'ProgramNode':
-                log('ProgramNode 类型')
-                return this.evalStatements(astNode.statements)
+                // log('ProgramNode 类型')
+                // return this.evalStatements(astNode.statements)
+                return this.evalProgram(astNode)
             case 'ExpressionStatementNode':
-                log('ExpressionStatementNode 类型')
+                // log('ExpressionStatementNode 类型')
                 return this.monkeyEval(astNode.expression)
             case 'IntegerNode':
-                log('IntegerNode 类型')
+                // log('IntegerNode 类型')
                 return IntegerType.new(astNode.value)
             case 'BoolNode':
-                log('BoolNode 类型', astNode)
+                // log('BoolNode 类型', astNode)
                 return BOOL_POOL[astNode.value]
             case 'PrefixNode':
-                log('PrefixNode 类型')
+                // log('PrefixNode 类型')
                 tempVal = this.monkeyEval(astNode.right)
                 log('tempVal', tempVal)
                 return this.evalPrefixExpr(astNode.op, tempVal)
             case 'InfixNode':
-                log('InfixNode 类型', astNode)
+                // log('InfixNode 类型', astNode)
                 left = this.monkeyEval(astNode.left)
                 right = this.monkeyEval(astNode.right)
                 return this.evalInfixExpr(astNode.op, left, right)
             case 'IfNode':
-                log('IfNode', astNode)
+                // log('IfNode', astNode)
                 return this.evalIfExpression(astNode)
             case 'BlockNode':
-                log('BlockNode')
-                return this.evalStatements(astNode.statements)
+                // log('BlockNode')
+                // return this.evalStatements(astNode.statements)
+                return this.evalBlockStatement(astNode)
+            case 'ReturnNode':
+                // log('ReturnNode', astNode)
+                tempVal = this.monkeyEval(astNode.returnValue)
+                return ReturnValueType.new(tempVal.value)
             default:
                 log('没找到')
                 return NullType.new(astNode.value)
         }
+    }
+
+    evalProgram(astNode) {
+        log('evalProgram')
+        const statements = astNode.statements
+        for(const stmt of statements) {
+            return this.monkeyEval(stmt)
+        }
+        return NullType.new(null)
     }
 
     evalStatements(statements) {
@@ -142,16 +158,27 @@ class Interpreter {
         }
     }
 
-    evalIfExpression(astNode) {
-        log('evalIfExpr')
+    evalIfExpression(astNode) {        
         const condition = astNode.condition
         const conditionValue = this.monkeyEval(condition)
-        log('conditionVal', conditionValue)
+        
         if(this.isTruthy(conditionValue)) {
             return this.monkeyEval(astNode.consequence)
         } else {
             return this.monkeyEval(astNode.alternative)
         }
+    }
+
+    evalBlockStatement(astNode) {
+        const statements = astNode.statements
+        for(const stmt of statements) {
+            let result = this.monkeyEval(stmt)
+            if(result.type === ObjectType.RETURN_VALUE_OBJ) {
+                return result
+            }
+        }
+
+        return ReturnValueType.new(null)
     }
 
     isTruthy(expr) {
@@ -168,7 +195,13 @@ function main() {
     log('main in interpreter')
     // 整数求值测试：5, 10
     // 布尔值测试求值：true, false
-    const code = `if(2 == 1){ 10 } else { 9 }`
+    const code = `
+    if(10 > 1) {
+        if(10 > 1) {
+            return 10;
+        }
+        return 1;
+    }`
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)
     const ast = parser.parseProgram()

@@ -30,6 +30,18 @@ class BooleanType extends ValueType {
     }
 }
 
+class ReturnValueType extends ValueType {
+    constructor(value) {
+        super()
+        this.type = ObjectType.RETURN_VALUE_OBJ
+        this.value = value
+    }
+
+    static new(value) {
+        return new this(value)
+    }
+}
+
 class NullType extends ValueType {
     constructor(value) {
         super()
@@ -45,5 +57,6 @@ class NullType extends ValueType {
 module.exports = {
     IntegerType,
     BooleanType,
+    ReturnValueType,
     NullType,
 }
