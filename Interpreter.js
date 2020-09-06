@@ -97,7 +97,15 @@ class Interpreter {
         // log('op', op, 'left', left, 'right', right)
         if(left.constructor.name === 'IntegerType' && right.constructor.name === 'IntegerType') {
             return this.evalIntegerInfixExpr(op, left, right)
-        } 
+        }
+
+        // 这里应该是 js 内置的判断相等，不了解原理
+        if(op === '==') {
+            log('left', left, 'right', right)
+            return BOOL_POOL[left == right]
+        } else if(op === '!=') {
+            return BOOL_POOL[left !== right]
+        }
         
         return null
     }
@@ -114,7 +122,15 @@ class Interpreter {
             case '*':
                 return IntegerType.new(a * b)
             case '/':
-                return IntegerType.new(a / b)                        
+                return IntegerType.new(a / b)
+            case '<':
+                return BOOL_POOL[a < b]
+            case '>':
+                return BOOL_POOL[a > b]
+            case '==':
+                return BOOL_POOL[a == b]
+            case '!=':
+                return BOOL_POOL[a != b]
             default:
                 return NullType.new(null)
         }
@@ -125,7 +141,7 @@ function main() {
     log('main in interpreter')
     // 整数求值测试：5, 10
     // 布尔值测试求值：true, false
-    const code = `(1 + 2) * 3`
+    const code = `true == false`
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)
     const ast = parser.parseProgram()
