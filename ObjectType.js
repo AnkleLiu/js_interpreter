@@ -8,6 +8,9 @@ class ObjectType {
     static get RETURN_VALUE_OBJ() {
         return 'RETURN_VALUE'
     }
+    static get ERROR_OBJ() {
+        return 'ERROR'
+    }
     static get NULL_OBJ() {
         return 'NULL'
     }

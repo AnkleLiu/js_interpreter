@@ -42,6 +42,18 @@ class ReturnValueType extends ValueType {
     }
 }
 
+class ErrorType extends ValueType {
+    constructor(msg) {
+        super()
+        this.type = ObjectType.ERROR_OBJ
+        this.msg = msg
+    }
+
+    static new(msg) {
+        return new this(msg)
+    }
+}
+
 class NullType extends ValueType {
     constructor(value) {
         super()
@@ -54,9 +66,30 @@ class NullType extends ValueType {
     }
 }
 
+// 环境
+class Environment {
+    constructor() {
+        this.env = {}
+    }
+
+    static new() {
+        return new this()
+    }
+
+    get(name) {
+        return this.env[name]
+    }
+
+    set(name, value) {
+        this.env[name] = value
+    }
+}
+
 module.exports = {
     IntegerType,
     BooleanType,
     ReturnValueType,
+    ErrorType,
     NullType,
+    Environment,
 }

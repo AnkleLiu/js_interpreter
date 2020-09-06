@@ -3,7 +3,8 @@ const { Lexer } = require('./Lexer')
 const { Parser } = require('./Parser')
 const { log } = require('./Utils.js')
 const { ObjectType } = require('./ObjectType')
-const { IntegerType, BooleanType, ReturnValueType, NullType } = require('./Object.js')
+const { IntegerType, BooleanType, ReturnValueType, NullType, 
+        Environment } = require('./Object.js')
 
 const BOOL_POOL = {
     'true': BooleanType.new(TokenType.TRUE),
@@ -19,7 +20,7 @@ class Interpreter {
         return new this(ast)
     }
 
-    monkeyEval(astNode) {        
+    monkeyEval(astNode, env) {
         console.log('astNode 类型', astNode.constructor.name);
         const rootNodeType = astNode.constructor.name
         let tempVal, left, right
@@ -27,10 +28,10 @@ class Interpreter {
             case 'ProgramNode':
                 // log('ProgramNode 类型')
                 // return this.evalStatements(astNode.statements)
-                return this.evalProgram(astNode)
+                return this.evalProgram(astNode, env)
             case 'ExpressionStatementNode':
-                // log('ExpressionStatementNode 类型')
-                return this.monkeyEval(astNode.expression)
+                log('ExpressionStatementNode 类型')
+                return this.monkeyEval(astNode.expression, env)
             case 'IntegerNode':
                 // log('IntegerNode 类型')
                 return IntegerType.new(astNode.value)
@@ -39,47 +40,61 @@ class Interpreter {
                 return BOOL_POOL[astNode.value]
             case 'PrefixNode':
                 // log('PrefixNode 类型')
-                tempVal = this.monkeyEval(astNode.right)
+                tempVal = this.monkeyEval(astNode.right, env)
                 log('tempVal', tempVal)
                 return this.evalPrefixExpr(astNode.op, tempVal)
             case 'InfixNode':
                 // log('InfixNode 类型', astNode)
-                left = this.monkeyEval(astNode.left)
-                right = this.monkeyEval(astNode.right)
+                left = this.monkeyEval(astNode.left, env)
+                right = this.monkeyEval(astNode.right, env)
                 return this.evalInfixExpr(astNode.op, left, right)
             case 'IfNode':
                 // log('IfNode', astNode)
-                return this.evalIfExpression(astNode)
+                return this.evalIfExpression(astNode, env)
             case 'BlockNode':
                 // log('BlockNode')
                 // return this.evalStatements(astNode.statements)
-                return this.evalBlockStatement(astNode)
+                return this.evalBlockStatement(astNode, env)
             case 'ReturnNode':
                 // log('ReturnNode', astNode)
-                tempVal = this.monkeyEval(astNode.returnValue)
+                tempVal = this.monkeyEval(astNode.returnValue, env)
                 return ReturnValueType.new(tempVal.value)
+            case 'LetNode':
+                // log('LetNode', astNode)
+                tempVal = this.monkeyEval(astNode.value, env)
+                env.set(astNode.name.value, tempVal)
+                // log('after set env', env)
+                return env
+            case 'IdentNode':
+                log('IdentNode', astNode)
+                return this.evalIdent(astNode, env)                                
             default:
                 log('没找到')
                 return NullType.new(astNode.value)
         }
     }
 
-    evalProgram(astNode) {
+    evalProgram(astNode, env) {
         log('evalProgram')
         const statements = astNode.statements
+        let result
         for(const stmt of statements) {
-            return this.monkeyEval(stmt)
+            result = this.monkeyEval(stmt, env)
+            const name = result.constructor.name
+            if(name === 'ReturnValue' || name === 'ErrorType') {
+                return result
+            }   
         }
         return NullType.new(null)
     }
 
-    evalStatements(statements) {
-        log('evalStatements')
-        for(const stmt of statements) {
-            return this.monkeyEval(stmt)
-        }
-        return NullType.new(null)
-    }
+    // evalStatements(statements) {
+    //     log('evalStatements')
+    //     for(const stmt of statements) {
+    //         return this.monkeyEval(stmt)
+    //     }
+    //     return NullType.new(null)
+    // }
 
     evalPrefixExpr(op, val) {
         log('op', op)
@@ -181,6 +196,11 @@ class Interpreter {
         return ReturnValueType.new(null)
     }
 
+    evalIdent(astNode, env) {
+        const name = astNode.value
+        return env.get(name)
+    }
+
     isTruthy(expr) {
         if(expr.value === 'TRUE') {
             return true
@@ -196,18 +216,17 @@ function main() {
     // 整数求值测试：5, 10
     // 布尔值测试求值：true, false
     const code = `
-    if(10 > 1) {
-        if(10 > 1) {
-            return 10;
-        }
-        return 1;
-    }`
+    let a = 5;
+    a;
+    `
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)
     const ast = parser.parseProgram()
+    // log('ast', ast.statements)
 
     const interpreter = Interpreter.new(ast)
-    const result = interpreter.monkeyEval(ast)
+    const env = Environment.new()
+    const result = interpreter.monkeyEval(ast, env)
 
     log('result\n', result)
 }
