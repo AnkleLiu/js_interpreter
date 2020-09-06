@@ -21,7 +21,7 @@ class Interpreter {
     monkeyEval(astNode) {        
         console.log('astNode 类型', astNode.constructor.name);
         const rootNodeType = astNode.constructor.name
-        let tempVal
+        let tempVal, left, right
         switch(rootNodeType) {
             case 'ProgramNode':
                 log('ProgramNode 类型')
@@ -40,6 +40,11 @@ class Interpreter {
                 tempVal = this.monkeyEval(astNode.right)
                 log('tempVal', tempVal)
                 return this.evalPrefixExpr(astNode.op, tempVal)
+            case 'InfixNode':
+                log('InfixNode 类型', astNode)
+                left = this.monkeyEval(astNode.left)
+                right = this.monkeyEval(astNode.right)
+                return this.evalInfixExpr(astNode.op, left, right)
             default:
                 log('没找到')
                 return NullType.new(astNode.value)
@@ -87,13 +92,40 @@ class Interpreter {
         // 目前只能是整数
         return IntegerType.new(Number(input.value)*(-1))
     }
+
+    evalInfixExpr(op, left, right) {
+        // log('op', op, 'left', left, 'right', right)
+        if(left.constructor.name === 'IntegerType' && right.constructor.name === 'IntegerType') {
+            return this.evalIntegerInfixExpr(op, left, right)
+        } 
+        
+        return null
+    }
+
+    evalIntegerInfixExpr(op, left, right) {
+        const a = left.value
+        const b = right.value
+
+        switch(op) {
+            case '+':
+                return IntegerType.new(a + b)
+            case '-':
+                return IntegerType.new(a - b)
+            case '*':
+                return IntegerType.new(a * b)
+            case '/':
+                return IntegerType.new(a / b)                        
+            default:
+                return NullType.new(null)
+        }
+    }
 }
 
 function main() {
     log('main in interpreter')
     // 整数求值测试：5, 10
     // 布尔值测试求值：true, false
-    const code = `--6`
+    const code = `(1 + 2) * 3`
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)
     const ast = parser.parseProgram()
