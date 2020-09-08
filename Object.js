@@ -42,6 +42,19 @@ class ReturnValueType extends ValueType {
     }
 }
 
+class FunctionType extends ValueType {
+    constructor(params, body, env) {
+        super()
+        this.params = params
+        this.body = body
+        this.env = env
+    }
+
+    static new(params, body, env) {
+        return new this(params, body, env)
+    }
+}
+
 class ErrorType extends ValueType {
     constructor(msg) {
         super()
@@ -70,6 +83,7 @@ class NullType extends ValueType {
 class Environment {
     constructor() {
         this.env = {}
+        this.outer = null
     }
 
     static new() {
@@ -77,11 +91,19 @@ class Environment {
     }
 
     get(name) {
-        return this.env[name]
+        const v = this.env[name]
+        if(v === undefined) {
+            return this.outer.get(name)
+        }
+        return v
     }
 
     set(name, value) {
         this.env[name] = value
+    }
+
+    setEnclosingEnv(outer) {
+        this.outer = outer
     }
 }
 
@@ -89,6 +111,7 @@ module.exports = {
     IntegerType,
     BooleanType,
     ReturnValueType,
+    FunctionType,
     ErrorType,
     NullType,
     Environment,

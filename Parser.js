@@ -233,7 +233,7 @@ class Parser {
     parseIfExpression() {
         const curToken = this.currentToken
         // 应该就是 if 吧
-        console.log('curToken in if', curToken);
+        // console.log('curToken in if', curToken);
         this.getNextToken()
         if(!this.currentTokenIs(TokenType.LPAREN)) {
             return null
@@ -276,19 +276,19 @@ class Parser {
     parseBlockStatement() {
         // curToken 是 {
         const curToken = this.currentToken
-        console.log('curToken in block', curToken);
+        // console.log('curToken in block', curToken);
         const statements = []
         this.getNextToken()
         // console.log('after get next in block', this.currentToken);
         while(!this.currentTokenIs(TokenType.RBRACE) && !this.currentTokenIs(TokenType.EOF)) {
             const stmt = this.parseStatement(this.currentToken)
-            console.log('block stmt', stmt);
+            // console.log('block stmt', stmt);
             if(stmt !== null) {
                 statements.push(stmt)
             }
             this.getNextToken()
         }
-        console.log('statements', statements);
+        // console.log('statements', statements);
         const node = BlockNode.new(statements)
 
         return node
@@ -335,15 +335,15 @@ class Parser {
         this.getNextToken()
         this.getNextToken()
 
-        console.log('参数列表', params);
+        // console.log('参数列表', params);
         return params
     }
 
     parseCallExpression(funExp) {
         // 这个 funExp 就是优先级函数里面的 leftExp
-        console.log('parseCallExpression', funExp, this.currentToken);
+        // console.log('parseCallExpression', funExp, this.currentToken);
         const args = this.parseCallArguments()
-        console.log('函数调用实参列表', args);
+        // console.log('函数调用实参列表', args);
 
         const node = CallNode.new(funExp, args)
 
@@ -352,7 +352,7 @@ class Parser {
 
     parseCallArguments() {
         // currentToken 是左括号
-        console.log('parseCallArguments', this.currentToken);
+        // console.log('parseCallArguments', this.currentToken);
         const args = []
         
         // 第一个实参
