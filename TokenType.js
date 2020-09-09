@@ -24,6 +24,10 @@ class TokenType {
     static get INT() {
         return 'INT'
     }
+    // 字符串
+    static get STRING() {
+        return 'STRING'
+    }
     // 操作符
     static get ASSIGN() {
         return 'ASSIGN'

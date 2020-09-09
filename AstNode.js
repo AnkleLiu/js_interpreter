@@ -70,6 +70,23 @@ class IdentNode extends StatementNode {
     }
 }
 
+// 字符串。原书是 ExpressionNode
+class StringNode extends StatementNode {
+    constructor(value) {
+        super()
+        this.token = Token.new(TokenType.STRING, value)
+        this.value = value
+    }
+
+    static new(value) {
+        return new this(value)
+    }
+
+    tokenLiteral() {
+        return `StringNode<${this.token}, ${this.value}>`
+    }
+}
+
 // 整数，属于 ExpressionNode，因为可以计算出数值来
 class IntegerNode extends ExpressionNode {
     constructor(value) {
@@ -230,6 +247,7 @@ module.exports = {
     ProgramNode,
     LetNode,
     IdentNode,
+    StringNode,
     IntegerNode,
     BoolNode,
     PrefixNode,

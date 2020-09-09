@@ -3,12 +3,29 @@ const { Lexer } = require('./Lexer')
 const { Parser } = require('./Parser')
 const { log } = require('./Utils.js')
 const { ObjectType } = require('./ObjectType')
-const { IntegerType, BooleanType, FunctionType, ReturnValueType, NullType, 
+const { IntegerType, BooleanType, StringType, BuiltinType,
+        FunctionType, ReturnValueType, NullType, 
         Environment } = require('./Object.js')
 
 const BOOL_POOL = {
     'true': BooleanType.new(TokenType.TRUE),
     'false': BooleanType.new(TokenType.FALSE),
+}
+
+const BUILTIN_POOL = {
+    'len': BuiltinType.new('len', function(args) {
+        if(args.length !== 1) {
+            return new ErrorType(`wrong number of arguments, expected 1, but got ${args.length}`)
+        }
+        const stringLiteral = args[0]
+        const type = stringLiteral.constructor.name
+        if(type === 'StringType') {
+            return new IntegerType(stringLiteral.value.length)
+        } else if(type === 'ArrayType') {
+            return new IntegerType(stringLiteral.elements.length)
+        }
+        return new ErrorType(`argument to 'len' not supported, got ${type}`)
+    })
 }
 
 class Interpreter {
@@ -38,6 +55,9 @@ class Interpreter {
             case 'BoolNode':
                 // log('BoolNode 类型', astNode)
                 return BOOL_POOL[astNode.value]
+            case 'StringNode':
+                // log('stringNode', astNode)
+                return StringType.new(astNode.value)
             case 'PrefixNode':
                 // log('PrefixNode 类型')
                 tempVal = this.monkeyEval(astNode.right, env)
@@ -150,6 +170,10 @@ class Interpreter {
             return this.evalIntegerInfixExpr(op, left, right)
         }
 
+        if(left.constructor.name === 'StringType' && right.constructor.name === 'StringType') {
+            return this.evalStringInfixExpr(op, left, right)
+        }
+
         // 这里应该是 js 内置的判断相等，不了解原理
         if(op === '==') {
             log('left', left, 'right', right)
@@ -185,6 +209,13 @@ class Interpreter {
             default:
                 return NullType.new(null)
         }
+    }
+
+    evalStringInfixExpr(op, left, right) {
+        const a = left.value
+        const b = right.value
+        
+        return StringType.new(a + b)
     }
 
     evalIfExpression(astNode) {        
@@ -229,15 +260,19 @@ class Interpreter {
     }
 
     applyFunction(fn, args) {
-        const extendedEnv = this.extendFuncEnv(fn, args)  
-        // log('extendedEnv', extendedEnv)      
-        const evaluated = this.monkeyEval(fn.body, extendedEnv)        
-        // log('evaluated', evaluated)
+        if(fn.constructor.name === 'BuiltinType') {
+            // 内置函数特殊处理一下
+            return fn.impl.call(this, args)
+        }
+
+        const extendedEnv = this.extendFuncEnv(fn, args)
+        const evaluated = this.monkeyEval(fn.body, extendedEnv)
 
         return evaluated
     }
 
     extendFuncEnv(fn, args) {
+        log('fn', fn)
         const enclosingEnv = fn.env
         const innerEnv = Environment.new()
         innerEnv.setEnclosingEnv(enclosingEnv)
@@ -254,6 +289,10 @@ class Interpreter {
     evalIdent(astNode, env) {
         const name = astNode.value
         const v = env.get(name)
+
+        if(v === undefined) {
+            return BUILTIN_POOL[name]
+        }
         
         return v
     }
@@ -275,7 +314,7 @@ function main() {
     // 函数测试：
     // let newAdder = fn(x) { fn(y) { x + y } };let addTwo = newAdder(2);addTwo(3);
     const code =  `
-        fn(x) { x; }(5)
+        len("");
     `
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)

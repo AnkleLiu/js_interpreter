@@ -109,6 +109,10 @@ class Lexer {
             case ';':
                 t.setTypeAndVal(TokenType.SEMICOLON, c)
                 break
+            case '"':
+                const v = this.readString()
+                t.setTypeAndVal(TokenType.STRING, v)
+                break
             case null:
                 t.setTypeAndVal(TokenType.EOF, null)
                 break
@@ -178,6 +182,29 @@ class Lexer {
         }
 
         return result
+    }
+
+    readString() {
+        // 跳过第一个双引号
+        let r = ''
+        this.readChar()        
+        if(this.currentChar === '"') {
+            // 空字符串
+            // console.log('空字符串')
+            return ""
+        }
+        while(this.peek() !== '"') {
+            r += this.currentChar
+            this.readChar()
+        }
+        
+        // 最后一个字符        
+        r += this.currentChar        
+
+        // 跳过最后一个双引号
+        this.readChar()
+
+        return r
     }
 
     skipWhitespace() {
@@ -289,9 +316,10 @@ const test5 = () => {
 
         10 == 10;
         10 != 9;
+        "foobar"; 
+        "foo bar";
+        "";
     `    
-    // "foobar"; 
-    // "foo bar";     
     // ""
     // [1, 2];
     // {"foo": "bar"}

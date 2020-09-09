@@ -30,6 +30,18 @@ class BooleanType extends ValueType {
     }
 }
 
+class StringType extends ValueType {
+    constructor(value) {
+        super()
+        this.type = ObjectType.STRING_OBJ
+        this.value = value
+    }
+
+    static new(value) {
+        return new this(value)
+    }
+}
+
 class ReturnValueType extends ValueType {
     constructor(value) {
         super()
@@ -52,6 +64,18 @@ class FunctionType extends ValueType {
 
     static new(params, body, env) {
         return new this(params, body, env)
+    }
+}
+
+class BuiltinType extends ValueType {
+    constructor(fnName, impl) {
+        super()
+        this.fnName = fnName
+        this.impl = impl
+    }
+
+    static new(fnName, impl) {
+        return new this(fnName, impl)
     }
 }
 
@@ -92,7 +116,7 @@ class Environment {
 
     get(name) {
         const v = this.env[name]
-        if(v === undefined) {
+        if(v === undefined && this.outer !== null) {
             return this.outer.get(name)
         }
         return v
@@ -110,6 +134,8 @@ class Environment {
 module.exports = {
     IntegerType,
     BooleanType,
+    StringType,
+    BuiltinType,
     ReturnValueType,
     FunctionType,
     ErrorType,

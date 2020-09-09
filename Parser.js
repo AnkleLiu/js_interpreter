@@ -1,5 +1,6 @@
 const { 
-    ProgramNode, LetNode, IdentNode, IntegerNode, BoolNode,
+    ProgramNode, LetNode, IdentNode, StringNode,
+    IntegerNode, BoolNode,
     PrefixNode, InfixNode, ReturnNode, IfNode, BlockNode, 
     FunctionNode, CallNode,
     ExpressionStatementNode,
@@ -40,6 +41,7 @@ class Parser {
         this.registerPrefixFn(TokenType.LPAREN, this.parseGroupedExpression)
         this.registerPrefixFn(TokenType.IF, this.parseIfExpression)
         this.registerPrefixFn(TokenType.FUNCTION, this.parseFunctionLiteral)
+        this.registerPrefixFn(TokenType.STRING, this.parseStringLiteral)
 
         this.registerInfixFn(TokenType.PLUS, this.parseInfixExpression)
         this.registerInfixFn(TokenType.MINUS, this.parseInfixExpression)
@@ -313,6 +315,10 @@ class Parser {
         return node
     }
 
+    parseStringLiteral() {
+        return StringNode.new(this.currentToken.value)
+    }
+
     parseFunctionParameters() {
         // console.log('parseFunctionParameters', this.currentToken);
         const params = []
@@ -431,7 +437,7 @@ function testParseReturnStmt() {
 }
 
 function main() {
-    const code = `let x = 5;`
+    const code = `""`
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)
     const r = parser.parseProgram()
