@@ -113,6 +113,12 @@ class Lexer {
                 const v = this.readString()
                 t.setTypeAndVal(TokenType.STRING, v)
                 break
+            case '[':                
+                t.setTypeAndVal(TokenType.LBRACKET, c)
+                break
+            case ']':                
+                t.setTypeAndVal(TokenType.RBRACKET, c)
+                break
             case null:
                 t.setTypeAndVal(TokenType.EOF, null)
                 break
@@ -319,13 +325,13 @@ const test5 = () => {
         "foobar"; 
         "foo bar";
         "";
-    `    
-    // ""
-    // [1, 2];
+        [1, 2];
+        myArray[1];
+    `        
     // {"foo": "bar"}
 
     const lexer = Lexer.new(code)
-    for(let i = 0; i < 80; i++) {
+    for(let i = 0; i < 90; i++) {
         console.log(lexer.getNextToken())
     }
 }

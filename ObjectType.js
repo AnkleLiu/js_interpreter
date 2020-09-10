@@ -8,6 +8,9 @@ class ObjectType {
     static get STRING_OBJ() {
         return 'STRING'
     }
+    static get ARRAY_OBJ() {
+        return 'ARRAY'
+    }
     static get RETURN_VALUE_OBJ() {
         return 'RETURN_VALUE'
     }

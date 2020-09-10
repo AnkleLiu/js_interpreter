@@ -2,7 +2,7 @@ const {
     ProgramNode, LetNode, IdentNode, StringNode,
     IntegerNode, BoolNode,
     PrefixNode, InfixNode, ReturnNode, IfNode, BlockNode, 
-    FunctionNode, CallNode,
+    FunctionNode, CallNode, ArrayNode, ArrayIndexNode,
     ExpressionStatementNode,
 } = require('./AstNode')
 const { TokenType } = require('./TokenType')
@@ -20,6 +20,7 @@ const precedences = {
     [TokenType.SLASH]: OperatorPriority.PRODUCT,
     [TokenType.ASTERISK]: OperatorPriority.PRODUCT,
     [TokenType.LPAREN]: OperatorPriority.CALL,
+    [TokenType.LBRACKET]: OperatorPriority.INDEX,
 }
 
 
@@ -42,6 +43,7 @@ class Parser {
         this.registerPrefixFn(TokenType.IF, this.parseIfExpression)
         this.registerPrefixFn(TokenType.FUNCTION, this.parseFunctionLiteral)
         this.registerPrefixFn(TokenType.STRING, this.parseStringLiteral)
+        this.registerPrefixFn(TokenType.LBRACKET, this.parseArrayLiteral)
 
         this.registerInfixFn(TokenType.PLUS, this.parseInfixExpression)
         this.registerInfixFn(TokenType.MINUS, this.parseInfixExpression)
@@ -52,6 +54,7 @@ class Parser {
         this.registerInfixFn(TokenType.LT, this.parseInfixExpression)
         this.registerInfixFn(TokenType.GT, this.parseInfixExpression)
         this.registerInfixFn(TokenType.LPAREN, this.parseCallExpression)
+        this.registerInfixFn(TokenType.LBRACKET, this.parseIndexExpression)
 
         this.errors = []
     }
@@ -319,6 +322,41 @@ class Parser {
         return StringNode.new(this.currentToken.value)
     }
 
+    parseArrayLiteral() {
+        const elements = this.parseExpressionList(TokenType.RBRACKET)
+        const arrayNode = ArrayNode.new(elements)
+
+        return arrayNode
+    }
+
+    parseExpressionList(endTokenType) {
+        const l = []
+
+        if(this.peekTokenIs(endTokenType)) {
+            // 空数组，跳过右括号
+            this.getNextToken()
+            return l
+        }
+
+        this.getNextToken()
+        l.push(this.parseExpression(OperatorPriority.LOWEST))
+
+        while(this.peekTokenIs(TokenType.COMMA)) {
+            this.getNextToken()
+            this.getNextToken()
+            l.push(this.parseExpression(OperatorPriority.LOWEST))
+        }
+
+        if(!this.peekTokenIs(endTokenType)) {
+            return null
+        }
+
+        // 跳过结束方括号
+        this.getNextToken()
+        
+        return l
+    }
+
     parseFunctionParameters() {
         // console.log('parseFunctionParameters', this.currentToken);
         const params = []
@@ -383,6 +421,20 @@ class Parser {
         return args
     }
 
+    parseIndexExpression(left) {
+        console.log('parseIndexExpression');
+        this.getNextToken()
+        const index = this.parseExpression(OperatorPriority.LOWEST)
+        if(!this.peekTokenIs(TokenType.RBRACKET)) {
+            return null
+        }
+
+        this.getNextToken()
+        const n = ArrayIndexNode.new(left, index)
+
+        return n
+    }
+
     parseBoolean() {
         const node = BoolNode.new(this.currentToken, this.currentToken.value)
         return node
@@ -437,17 +489,17 @@ function testParseReturnStmt() {
 }
 
 function main() {
-    const code = `""`
+    const code = `myArray[1]`
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)
     const r = parser.parseProgram()
     console.log('statements\n', r.statements[0]);
 
     // 校验一个 let 语句
-    const stmt = r.statements[0]
-    console.log(stmt.constructor.name)
-    console.log(stmt.name)
-    console.log(stmt.value)
+    // const stmt = r.statements[0]
+    // console.log(stmt.constructor.name)
+    // console.log(stmt.name)
+    // console.log(stmt.value)
 
 }
 

@@ -4,8 +4,8 @@ const { Parser } = require('./Parser')
 const { log } = require('./Utils.js')
 const { ObjectType } = require('./ObjectType')
 const { IntegerType, BooleanType, StringType, BuiltinType,
-        FunctionType, ReturnValueType, NullType, 
-        Environment } = require('./Object.js')
+        ArrayType, FunctionType, ReturnValueType, NullType, 
+        ErrorType, Environment } = require('./Object.js')
 
 const BOOL_POOL = {
     'true': BooleanType.new(TokenType.TRUE),
@@ -15,17 +15,57 @@ const BOOL_POOL = {
 const BUILTIN_POOL = {
     'len': BuiltinType.new('len', function(args) {
         if(args.length !== 1) {
-            return new ErrorType(`wrong number of arguments, expected 1, but got ${args.length}`)
+            return ErrorType.new(`wrong number of arguments, expected 1, but got ${args.length}`)
         }
         const stringLiteral = args[0]
         const type = stringLiteral.constructor.name
         if(type === 'StringType') {
-            return new IntegerType(stringLiteral.value.length)
+            return IntegerType.new(stringLiteral.value.length)
         } else if(type === 'ArrayType') {
-            return new IntegerType(stringLiteral.elements.length)
+            return IntegerType.new(stringLiteral.elements.length)
         }
-        return new ErrorType(`argument to 'len' not supported, got ${type}`)
-    })
+        return ErrorType.new(`argument to 'len' not supported, got ${type}`)
+    }),
+    'first': BuiltinType.new('first', function(args) {
+        if(args.length !== 1) {
+            return ErrorType.new(`wrong number of arguments, expected 1, but got ${args.length}`)
+        }        
+        if(args[0].constructor.name !== 'ArrayType') {
+            return ErrorType.new(`argument to first must be ARRAY, but got ${args[0].type}`)
+        }
+        const arr = args[0]
+        if(arr.elements.length > 0) {
+            return arr.elements[0]
+        }
+        return NullType.new(null)
+    }),
+    'rest': BuiltinType.new('rest', function(args) {
+        if(args.length !== 1) {
+            return ErrorType.new(`wrong number of arguments, expected 1, but got ${args.length}`)
+        }
+        // log('args[0]', args[0])
+        if(args[0].constructor.name !== 'ArrayType') {
+            return ErrorType.new(`argument to rest must be ARRAY, but got ${args[0].type}`)
+        }
+        const arr = args[0]
+        if(arr.elements.length > 0) {
+            const l = arr.elements.slice(1)            
+            return ArrayType.new(l)
+        }
+        return NullType.new(null)
+    }),
+    'push': BuiltinType.new('push', function(args) {
+        if(args.length !== 2) {
+            return ErrorType.new(`wrong number of arguments, expected 2, but got ${args.length}`)
+        }        
+        if(args[0].constructor.name !== 'ArrayType') {
+            return ErrorType.new(`argument to push must be ARRAY, but got ${args[0].type}`)
+        }        
+        const arr = args[0]
+        arr.elements.push(args[1])
+        
+        return arr
+    }),
 }
 
 class Interpreter {
@@ -100,6 +140,17 @@ class Interpreter {
                 const args = this.evalExpressions(astNode.args, env)
                 // log('args', args)
                 return this.applyFunction(fn, args)
+            case 'ArrayNode':
+                // log('ArrayNode', astNode)
+                const elems = this.evalExpressions(astNode.elements, env)
+                // log('elems', elems)
+                return ArrayType.new(elems)
+            case 'ArrayIndexNode':
+                // log('ArrayIndexNode', astNode)
+                left = this.monkeyEval(astNode.left, env)
+                const index = this.monkeyEval(astNode.index, env)
+                // log('elems', elems)
+                return this.evalIndexExpression(left, index)
             default:
                 log('没找到')
                 return NullType.new(astNode.value)
@@ -272,7 +323,7 @@ class Interpreter {
     }
 
     extendFuncEnv(fn, args) {
-        log('fn', fn)
+        // log('fn', fn)
         const enclosingEnv = fn.env
         const innerEnv = Environment.new()
         innerEnv.setEnclosingEnv(enclosingEnv)
@@ -284,6 +335,18 @@ class Interpreter {
         }
         
         return innerEnv
+    }
+
+    evalIndexExpression(left, index) {
+        // log('left', left)
+        // log('index', index)
+        const v = index.value
+        const l = left.elements
+        if(v < 0 || v > l.length) {
+            return NullType.new(null)
+        }
+
+        return left.elements[index.value]
     }
 
     evalIdent(astNode, env) {
@@ -313,8 +376,17 @@ function main() {
     // 布尔值测试求值：true, false
     // 函数测试：
     // let newAdder = fn(x) { fn(y) { x + y } };let addTwo = newAdder(2);addTwo(3);
+    // [1, 2, 3][0]
+    // [1, 2, 3][1]
+    // [1, 2, 3][2]
+    // let i = 0; [1, 2, 3][i + 1]
+    // let myArray = [1, 2, 3]; myArray[2]
+    // let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];
+    // let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]
+    // [1, 2, 3][-1]
+    // [1, 2, 3][4]
     const code =  `
-        len("");
+        let a = [1, 2, 3]; push(a, 4)
     `
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)

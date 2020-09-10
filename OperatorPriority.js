@@ -24,6 +24,10 @@ class OperatorPriority {
     static get CALL() {
         return 7
     }
+    static get INDEX() {
+        // 数组下标
+        return 8
+    }
 }
 
 

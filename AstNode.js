@@ -218,6 +218,37 @@ class CallNode extends ExpressionNode {
     }
 }
 
+// 数组
+class ArrayNode extends StatementNode {
+    constructor(elements) {
+        super()
+        this.token = Token.new(TokenType.LBRACKET, '[')
+        this.elements = elements
+    }
+
+    static new(elements) {
+        return new this(elements)
+    }
+
+    addELement(elem) {
+        this.elements.push(elem)
+    }
+}
+
+// 数组下标访问
+class ArrayIndexNode extends StatementNode {
+    constructor(left, index) {
+        super()
+        this.token = Token.new(TokenType.LBRACKET, '[')
+        this.left = left
+        this.index = index
+    }
+
+    static new(left, index) {
+        return new this(left, index)
+    }
+}
+
 // 单独加了一个 ExpressionStatement，例如 x + 10; 这样的语句
 class ExpressionStatementNode extends Node {
     constructor(expression) {
@@ -257,5 +288,7 @@ module.exports = {
     BlockNode,
     FunctionNode,
     CallNode,
+    ArrayNode,
+    ArrayIndexNode,
     ExpressionStatementNode,
 }

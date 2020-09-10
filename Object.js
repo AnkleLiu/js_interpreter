@@ -67,6 +67,17 @@ class FunctionType extends ValueType {
     }
 }
 
+class ArrayType extends ValueType {
+    constructor(elements) {
+        super()
+        this.elements = elements
+    }
+
+    static new(elements) {
+        return new this(elements)
+    }
+}
+
 class BuiltinType extends ValueType {
     constructor(fnName, impl) {
         super()
@@ -138,6 +149,7 @@ module.exports = {
     BuiltinType,
     ReturnValueType,
     FunctionType,
+    ArrayType,
     ErrorType,
     NullType,
     Environment,
