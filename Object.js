@@ -78,6 +78,18 @@ class ArrayType extends ValueType {
     }
 }
 
+// 原书有一个 HashType 对象作为 key，这里偷懒就用 js 的字符串都 key 值
+class HashType extends ValueType {
+    constructor(pairs) {
+        super()
+        this.pairs = pairs
+    }
+
+    static new(pairs) {
+        return new this(pairs)
+    }
+}
+
 class BuiltinType extends ValueType {
     constructor(fnName, impl) {
         super()
@@ -150,6 +162,7 @@ module.exports = {
     ReturnValueType,
     FunctionType,
     ArrayType,
+    HashType,
     ErrorType,
     NullType,
     Environment,

@@ -4,7 +4,7 @@ const { Parser } = require('./Parser')
 const { log } = require('./Utils.js')
 const { ObjectType } = require('./ObjectType')
 const { IntegerType, BooleanType, StringType, BuiltinType,
-        ArrayType, FunctionType, ReturnValueType, NullType, 
+        ArrayType, HashType, FunctionType, ReturnValueType, NullType, 
         ErrorType, Environment } = require('./Object.js')
 
 const BOOL_POOL = {
@@ -151,6 +151,9 @@ class Interpreter {
                 const index = this.monkeyEval(astNode.index, env)
                 // log('elems', elems)
                 return this.evalIndexExpression(left, index)
+            case 'HashNode':
+                // log('HashNode', astNode)
+                return this.evalHash(astNode, env)
             default:
                 log('没找到')
                 return NullType.new(astNode.value)
@@ -292,11 +295,6 @@ class Interpreter {
         }
         
         return result
-        // if(result !== null) {
-        //     return ReturnValueType.new(result.value)
-        // }
-        
-        // return ReturnValueType.new(null)
     }
 
     evalExpressions(args, env) {
@@ -340,13 +338,30 @@ class Interpreter {
     evalIndexExpression(left, index) {
         // log('left', left)
         // log('index', index)
-        const v = index.value
-        const l = left.elements
-        if(v < 0 || v > l.length) {
-            return NullType.new(null)
+        if(left.constructor.name === 'HashType') {
+            return left.pairs[index.value]
+        } else {
+            // 不要错误处理了
+            // const v = index.value
+            // const l = left.elements
+            // if(v < 0 || v > l.length) {
+            //     return NullType.new(null)
+            // }    
+            return left.elements[index.value]    
         }
+    }
 
-        return left.elements[index.value]
+    evalHash(astNode, env) {
+        const m = {}
+        const pairs = astNode.pairs
+        const keys = Object.keys(pairs)
+        for(const key of keys) {
+            const v = this.monkeyEval(pairs[key])
+            log('v', v)
+            m[key] = v
+        }
+        
+        return HashType.new(m)
     }
 
     evalIdent(astNode, env) {
@@ -386,7 +401,8 @@ function main() {
     // [1, 2, 3][-1]
     // [1, 2, 3][4]
     const code =  `
-        let a = [1, 2, 3]; push(a, 4)
+        let person = { "name": "Bob", "age": 29 }
+        person["name"]
     `
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)

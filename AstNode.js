@@ -249,6 +249,19 @@ class ArrayIndexNode extends StatementNode {
     }
 }
 
+// 字典
+class HashNode extends StatementNode {
+    constructor(pairs) {
+        super()
+        this.token = Token.new(TokenType.LBRACE, '{')
+        this.pairs = pairs
+    }
+
+    static new(pairs) {
+        return new this(pairs)
+    }
+}
+
 // 单独加了一个 ExpressionStatement，例如 x + 10; 这样的语句
 class ExpressionStatementNode extends Node {
     constructor(expression) {
@@ -290,5 +303,6 @@ module.exports = {
     CallNode,
     ArrayNode,
     ArrayIndexNode,
+    HashNode,
     ExpressionStatementNode,
 }

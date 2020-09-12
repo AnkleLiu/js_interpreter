@@ -116,8 +116,11 @@ class Lexer {
             case '[':                
                 t.setTypeAndVal(TokenType.LBRACKET, c)
                 break
-            case ']':                
+            case ']':
                 t.setTypeAndVal(TokenType.RBRACKET, c)
+                break
+            case ':':
+                t.setTypeAndVal(TokenType.COLON, c)
                 break
             case null:
                 t.setTypeAndVal(TokenType.EOF, null)
@@ -327,11 +330,10 @@ const test5 = () => {
         "";
         [1, 2];
         myArray[1];
+        {"foo": "bar"};
     `        
-    // {"foo": "bar"}
-
     const lexer = Lexer.new(code)
-    for(let i = 0; i < 90; i++) {
+    for(let i = 0; i < 100; i++) {
         console.log(lexer.getNextToken())
     }
 }

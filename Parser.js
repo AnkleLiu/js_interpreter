@@ -4,6 +4,7 @@ const {
     PrefixNode, InfixNode, ReturnNode, IfNode, BlockNode, 
     FunctionNode, CallNode, ArrayNode, ArrayIndexNode,
     ExpressionStatementNode,
+    HashNode,
 } = require('./AstNode')
 const { TokenType } = require('./TokenType')
 const { Lexer } = require('./Lexer')
@@ -44,6 +45,7 @@ class Parser {
         this.registerPrefixFn(TokenType.FUNCTION, this.parseFunctionLiteral)
         this.registerPrefixFn(TokenType.STRING, this.parseStringLiteral)
         this.registerPrefixFn(TokenType.LBRACKET, this.parseArrayLiteral)
+        this.registerPrefixFn(TokenType.LBRACE, this.parseHashLiteral)
 
         this.registerInfixFn(TokenType.PLUS, this.parseInfixExpression)
         this.registerInfixFn(TokenType.MINUS, this.parseInfixExpression)
@@ -422,7 +424,7 @@ class Parser {
     }
 
     parseIndexExpression(left) {
-        console.log('parseIndexExpression');
+        // console.log('parseIndexExpression');
         this.getNextToken()
         const index = this.parseExpression(OperatorPriority.LOWEST)
         if(!this.peekTokenIs(TokenType.RBRACKET)) {
@@ -433,6 +435,43 @@ class Parser {
         const n = ArrayIndexNode.new(left, index)
 
         return n
+    }
+
+    parseHashLiteral() {
+        // LBRACE
+        // console.log('parseHashLiteral', this.currentToken)
+        const pairs = {}
+        
+        while(!this.peekTokenIs(TokenType.RBRACE)) {            
+            // currentToken --- key
+            this.getNextToken()            
+            const key = this.parseExpression(OperatorPriority.LOWEST)
+            // 这里很麻烦，如果 key 是 AstNode 类型，那么 js 就把它当成 [object object] ，所以最后只能剩下一个 key
+            // 如果用 value 当 key ，就不支持 key 的计算了。暂时就用 value 字符串当作 key
+            // console.log('key', key)
+            if(!this.peekTokenIs(TokenType.COLON)) {
+                return null
+            }
+            
+            // currentToken --- :
+            this.getNextToken()
+            // currentToken --- val
+            this.getNextToken()
+            const val = this.parseExpression(OperatorPriority.LOWEST)
+            pairs[key.value] = val
+
+            // 下一个是 , 或者 }
+            if(!this.peekTokenIs(TokenType.COMMA)) {
+                // 跳过 } 
+                this.getNextToken()
+                return HashNode.new(pairs)
+            } else {
+                // 跳过 , 号
+                this.getNextToken()
+            }
+        }
+
+        return HashNode.new(pairs)
     }
 
     parseBoolean() {
@@ -468,28 +507,17 @@ class Parser {
     }
 }
 
-function testParseFn() {
-    const codes = [`fn(x, y){ x + y; };`, `fn(x){};`, `fn(x, y, z){};` ]
-    // TODO。
-}
-
-function testParseFunCall() {
-    const codes = [`add(1, 2 * 3, 4 + 5);`, `add(2, 3);`, `call(2, 3, fn(x, y){x + y;});` ]
-    // TODO。
-}
-
-function testParseLetStmt() {
-    const codes = [`let x = 5;`, `let x = 5 + 1`, `call(2, 3, fn(x, y){x + y;});` ]
-    // TODO。
-}
-
-function testParseReturnStmt() {
-    const codes = [`return 5;`, `let x = 5 + 1`, `call(2, 3, fn(x, y){x + y;});` ]
-    // TODO。
-}
-
 function main() {
-    const code = `myArray[1]`
+    const code = `
+    {
+        "one": 10 - 9,
+        two: 1 + 1,
+        "thr" + "ee": 6 / 2,
+        4: 4,
+        true: 5,
+        false: 6
+    }
+    `
     const lexer = Lexer.new(code)
     const parser = Parser.new(lexer)
     const r = parser.parseProgram()

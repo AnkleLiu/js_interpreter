@@ -63,6 +63,9 @@ class TokenType {
     static get COMMA() {
         return 'COMMA'
     }
+    static get COLON() {
+        return 'COLON'
+    }
     static get SEMICOLON() {
         return 'SEMICOLON'
     }
@@ -99,6 +102,12 @@ class TokenType {
     }
     static get RETURN() {
         return 'RETURN'
+    }
+    static get LBRACKET() {
+        return 'LBRACKET'
+    }
+    static get RBRACKET() {
+        return 'RBRACKET'
     }
 }
 

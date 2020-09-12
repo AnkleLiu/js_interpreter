@@ -11,6 +11,9 @@ class ObjectType {
     static get ARRAY_OBJ() {
         return 'ARRAY'
     }
+    static get HASH_OBJ() {
+        return 'HASH'
+    }
     static get RETURN_VALUE_OBJ() {
         return 'RETURN_VALUE'
     }
